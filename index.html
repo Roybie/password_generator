@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="user-scalable=yes, initial-scale=1.0, maximum-scale=2.0, width=device-width" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', {scope: '/'})
+        .then(function(reg) {
+          // registration worked
+          console.log('Registration succeeded. Scope is ' + reg.scope);
+        }).catch(function(error) {
+          // registration failed
+          console.log('Registration failed with ' + error);
+        });
+      }
+    </script>
+    <script src="./seedrandom.min.js"></script>
+    <style>
+      body { margin: 0; display: flex; justify-content: center; }
+      section { padding: 20px; max-width: 500px; flex: 1; }
+      #password,
+      #input {
+        width: 100%;
+        height: 40px;
+        border: 1px solid lightsteelblue;
+        padding: 0 20px;
+      }
+      #button {
+        width: 100%;
+        height: 40px;
+        background: lightsteelblue;
+        color: white;
+        margin: 20px 0;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <section>
+      <div>
+        <input placeholder="seed" id="input" type="password" />
+        <button id="button">Generate</button>
+      </div>
+      <div>
+        <input readonly="true" id="password" />
+      </div>
+    </section>
+    <script>
+      function generate( key = Date.now(), length = 12 ) {
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers   = '0123456789';
+        const symbols   = '!"#$%&\'()*+,-./:;<=>?@^[\\]^_`{|}~';
+        const all = uppercase + lowercase + numbers + symbols;
+
+        let password = '';
+
+        const rng = new Math.seedrandom(key);
+
+        password += uppercase[Math.floor(rng() * uppercase.length)];
+        password += lowercase[Math.floor(rng() * lowercase.length)];
+        password += numbers[Math.floor(rng() * numbers.length)];
+        password += symbols[Math.floor(rng() * symbols.length)];
+
+        while (password.length < length) {
+          password += all[Math.floor(rng() * all.length)];
+        }
+
+        return password;
+      }
+
+      const generatePassword = () => {
+        const key = document.querySelector('#input').value;
+        
+        const password = generate(key);
+        const result = document.querySelector('#password')
+        result.value = password;
+        result.focus();
+        result.select();
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+      }
+
+      document.querySelector('#input').onkeyup = e => {
+        if (e.key === 'Enter') {
+          generatePassword();
+        }
+      }
+      document.querySelector('#button').onclick = generatePassword;
+    </script>
+  </body>
+</html>
